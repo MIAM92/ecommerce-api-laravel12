@@ -1,0 +1,153 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API de E-Commerce Segura",
+        "description": "Documentación profesional de los endpoints de la tienda en línea con Laravel 12 y JWT",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:8000",
+            "description": "Servidor de Desarrollo Local"
+        }
+    ],
+    "paths": {
+        "/api/auth/register": {
+            "post": {
+                "tags": ["Autenticación"],
+                "summary": "Registrar un nuevo cliente",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": ["name", "email", "password"],
+                                "properties": {
+                                    "name": {"type": "string", "example": "Juan Pérez"},
+                                    "email": {"type": "string", "format": "email", "example": "juan@example.com"},
+                                    "password": {"type": "string", "format": "password", "example": "secreto123"}
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {"description": "Usuario registrado exitosamente"},
+                    "400": {"description": "Error en las validaciones de datos"}
+                }
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "tags": ["Autenticación"],
+                "summary": "Iniciar sesión y obtener token JWT",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": ["email", "password"],
+                                "properties": {
+                                    "email": {"type": "string", "format": "email", "example": "juan@example.com"},
+                                    "password": {"type": "string", "format": "password", "example": "secreto123"}
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {"description": "Login correcto, devuelve el token"},
+                    "401": {"description": "Credenciales incorrectas"}
+                }
+            }
+        },
+        "/api/products": {
+            "get": {
+                "tags": ["Productos"],
+                "summary": "Listado público de productos",
+                "responses": {
+                    "200": {"description": "Lista de productos obtenida exitosamente"}
+                }
+            },
+            "post": {
+                "tags": ["Productos"],
+                "summary": "Crear un nuevo producto (Admin)",
+                "security": [{"bearerAuth": []}],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": ["name", "price", "stock"],
+                                "properties": {
+                                    "name": {"type": "string", "example": "Monitor 4K Pro"},
+                                    "description": {"type": "string", "example": "Monitor de 27 pulgadas IPS"},
+                                    "price": {"type": "number", "format": "float", "example": 349.99},
+                                    "stock": {"type": "integer", "example": 12}
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {"description": "Producto creado con éxito"},
+                    "400": {"description": "Error de validación"}
+                }
+            }
+        },
+        "/api/orders": {
+            "post": {
+                "tags": ["Órdenes y Pagos"],
+                "summary": "Crear una orden y procesar el pago seguro con Stripe",
+                "security": [{"bearerAuth": []}],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": ["stripe_token", "items"],
+                                "properties": {
+                                    "stripe_token": {"type": "string", "example": "tok_visa"},
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "product_id": {"type": "integer", "example": 1},
+                                                "quantity": {"type": "integer", "example": 2}
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {"description": "Compra completada con éxito"},
+                    "400": {"description": "Error en procesamiento o stock insuficiente"}
+                }
+            }
+        },
+        "/api/orders/history": {
+            "get": {
+                "tags": ["Órdenes y Pagos"],
+                "summary": "Consultar el historial de compras del usuario autenticado",
+                "security": [{"bearerAuth": []}],
+                "responses": {
+                    "200": {"description": "Historial de compras devuelto exitosamente"}
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "Introduce tu token JWT en el formato: Bearer {token}"
+            }
+        }
+    }
+}
